@@ -7,11 +7,16 @@ const router = express.Router();
 router.get("/", async (req, res) => {
     const { tag, search } = req.query;
     let filter = {};
-    if (tag) filter.tags = tag;
-    if (search) filter.title = new RegExp(search, "i");
+    if (tag) {
+        filter.tags = { $elemMatch: { $regex: new RegExp(tag, "i") } };
+    }
+    if (search) {
+        filter.title = new RegExp(search, "i");
+    }
     const links = await Link.find(filter);
     res.json(links);
 });
+
 
 // POST /links
 router.post("/", async (req, res) => {
@@ -38,7 +43,7 @@ router.patch("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
     try {
         await Link.findByIdAndDelete(req.params.id);
-        res.status(200).json({message:"Link Deleted"})
+        res.status(200).json({ message: "Link Deleted" })
     } catch (e) {
         res.status(400).json({ message: e.message });
     }
